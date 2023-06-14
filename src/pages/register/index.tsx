@@ -35,7 +35,7 @@ export default function Register() {
         })
     }
     setEnviar(false)
-  }, [enviar])
+  }, [enviar, router])
 
   const handleShowPassword = () => {
     if (!showPassword) {

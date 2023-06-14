@@ -25,12 +25,12 @@ export default function ConfigsUser() {
       setInputName(response.data.name)
       setInputEmail(response.data.email)
       setInputSenha(response.data.senha)
-    } catch { }
+    } catch {}
   }
 
   useEffect(() => {
     fetchData()
-  }, [])
+  }, [fetchData])
 
   const save = () => {
     axios
