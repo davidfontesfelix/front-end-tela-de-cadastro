@@ -1,10 +1,12 @@
 import Login from '@/components/Login'
 import Plate from '@/components/Plate'
 import Register from '@/components/Register'
-import { Roboto_Slab } from 'next/font/google'
 import { useState } from 'react'
+import { Roboto_Slab } from 'next/font/google'
 
-const RobotoSlab = Roboto_Slab({ subsets: ['latin'] })
+const RobotoSlab = Roboto_Slab({
+  subsets: ['latin'],
+})
 
 export default function Home() {
   const [loginOrRegister, setLoginOrRegister] = useState('login')

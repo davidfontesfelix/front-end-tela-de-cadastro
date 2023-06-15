@@ -23,6 +23,9 @@ module.exports = {
         tabletMini: { max: '940px' },
         phone: { max: '840px' },
       },
+      fontFamily: {
+        roboto: 'var(--roboto-slab)',
+      },
     },
   },
   plugins: [],

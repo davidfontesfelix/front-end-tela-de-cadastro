@@ -1,6 +1,11 @@
 import { useRouter } from 'next/router'
 import axios from 'axios'
 import { useEffect, useState } from 'react'
+import { Roboto_Slab } from 'next/font/google'
+
+const RobotoSlab = Roboto_Slab({
+  subsets: ['latin'],
+})
 
 export default function EmailAccount() {
   const router = useRouter()
@@ -26,7 +31,9 @@ export default function EmailAccount() {
 
   return (
     <div>
-      <section className="background flex h-screen w-screen items-center justify-center">
+      <section
+        className={`${RobotoSlab.className} background flex h-screen w-screen items-center justify-center`}
+      >
         <div className="vidro absolute h-screen w-screen"></div>
         <div className="z-10 h-[600px] w-[60vw] rounded-md bg-white tabletMini:w-[80vw] phone:w-[89vw]">
           {viewError ? (

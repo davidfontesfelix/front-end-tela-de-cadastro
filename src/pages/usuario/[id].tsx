@@ -2,6 +2,11 @@ import PencilLine from '../../assets/icons/pencil-line.svg'
 import axios from 'axios'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
+import { Roboto_Slab } from 'next/font/google'
+
+const RobotoSlab = Roboto_Slab({
+  subsets: ['latin'],
+})
 
 export default function ConfigsUser() {
   const router = useRouter()
@@ -58,10 +63,12 @@ export default function ConfigsUser() {
   }
 
   return (
-    <div className="flex h-screen w-screen items-center justify-center">
+    <div
+      className={` ${RobotoSlab.className} flex h-screen w-screen items-center justify-center`}
+    >
       <div className="vidro absolute h-screen w-screen"></div>
       <div className="z-10 h-[600px] w-[60vw] rounded-md bg-neutral-100 tablet:w-[75vw] tabletMini:w-[80vw] phone:w-[89vw]">
-        <header className="flex flex-col items-center">
+        <header className="flex flex-col items-center ">
           <h1 className="mt-5 text-5xl">Usuário</h1>
           <h2 className="text-xl">configurações</h2>
           <div className="mt-4 h-[2px] w-[95%] bg-black"></div>
