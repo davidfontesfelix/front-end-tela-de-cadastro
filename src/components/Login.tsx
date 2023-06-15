@@ -70,7 +70,7 @@ export default function Login(props: LoginProps) {
           </label>
           <input
             ref={inputNameRef}
-            className="mb-2 rounded-md py-2 pl-3 "
+            className="input mb-2 rounded-md py-2 pl-3 "
             type="text"
             placeholder="Nome de usuário"
           />
@@ -80,7 +80,7 @@ export default function Login(props: LoginProps) {
           <div className="relative flex">
             <input
               ref={inputPasswordRef}
-              className="mb-2 flex-1 rounded-md py-2 pl-3 "
+              className="input mb-2 flex-1 rounded-md py-2 pl-3 "
               type={showPassword ? 'text' : 'password'}
               placeholder="Senha"
             />

@@ -74,7 +74,7 @@ export default function Register(props: RegisterProps) {
           </label>
           <input
             ref={inputNameRef}
-            className="mb-2 rounded-md py-2 pl-3 "
+            className="input mb-2 rounded-md py-2 pl-3 "
             type="text"
             placeholder="Nome de usuário"
           />
@@ -83,7 +83,7 @@ export default function Register(props: RegisterProps) {
           </label>
           <input
             ref={inputEmailRef}
-            className="mb-2 rounded-md py-2 pl-3 "
+            className="input mb-2 rounded-md py-2 pl-3 "
             type="text"
             placeholder="Email"
           />
@@ -93,7 +93,7 @@ export default function Register(props: RegisterProps) {
           <div className="relative flex">
             <input
               ref={inputPasswordRef}
-              className="mb-2 flex-1 rounded-md py-2 pl-3 "
+              className="input mb-2 flex-1 rounded-md py-2 pl-3 "
               type={showPassword ? 'text' : 'password'}
               placeholder="Senha"
             />
@@ -113,7 +113,7 @@ export default function Register(props: RegisterProps) {
           </label>
           <input
             ref={inputConfirmPasswordRef}
-            className="mb-2 rounded-md py-2 pl-3 "
+            className="input mb-2 rounded-md py-2 pl-3 "
             type="password"
             placeholder="Confirmar senha"
           />
