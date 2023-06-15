@@ -16,21 +16,20 @@ export default function ConfigsUser() {
   const [inputEmail, setInputEmail] = useState('')
   const [inputSenha, setInputSenha] = useState('')
 
-  async function fetchData() {
-    try {
-      const response = await axios.get(
-        `https://servidor-da-tela-de-cadastro.vercel.app/users/${id}`,
-      )
-
-      setInputName(response.data.name)
-      setInputEmail(response.data.email)
-      setInputSenha(response.data.senha)
-    } catch {}
-  }
-
   useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await axios.get(
+          `https://servidor-da-tela-de-cadastro.vercel.app/users/${id}`,
+        )
+
+        setInputName(response.data.name)
+        setInputEmail(response.data.email)
+        setInputSenha(response.data.senha)
+      } catch {}
+    }
     fetchData()
-  }, [fetchData])
+  }, [id])
 
   const save = () => {
     axios
