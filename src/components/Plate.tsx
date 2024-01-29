@@ -1,6 +1,6 @@
 export interface PlateProps {
   ChangeButton: any
-  options: () => any
+  options: () => void
   LoginOrRegister: any
 }
 

@@ -12,8 +12,8 @@ export default function Home() {
   const [loginOrRegister, setLoginOrRegister] = useState('login')
   const [loginOrRegisterButton, setLoginOrRegisterButton] =
     useState('Registra-se')
-  const [animationSignIn, setAnimationSignIn] = useState<true | false>()
-  const [animationSignUp, setAnimationSignUp] = useState(true)
+  const [animationSignIn, setAnimationSignIn] = useState<boolean>()
+  const [animationSignUp, setAnimationSignUp] = useState<boolean>(true)
 
   const exchangeOptions = () => {
     if (loginOrRegister === 'login') {
@@ -39,12 +39,12 @@ export default function Home() {
         <Plate
           LoginOrRegister={loginOrRegister}
           ChangeButton={loginOrRegisterButton}
-          options={async () => exchangeOptions()}
+          options={() => exchangeOptions()}
         />
         <div className="container flex w-full">
           <Login
             animation={animationSignIn}
-            options={async () => exchangeOptions()}
+            options={() => exchangeOptions()}
           />
           <Register animation={animationSignUp} />
         </div>

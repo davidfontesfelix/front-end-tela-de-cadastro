@@ -1,44 +1,76 @@
-import { RefObject, useEffect, useRef, useState } from 'react'
-import axios from 'axios'
-import { useRouter } from 'next/router'
-import { Roboto_Slab } from 'next/font/google'
+import { useState } from 'react'
+import * as Yup from 'yup'
+import { SubmitErrorHandler, SubmitHandler, useForm } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
 
-const RobotoSlab = Roboto_Slab({ subsets: ['latin'] })
+interface RegisterProps {
+  animation: boolean
+}
 
-export default function Register() {
-  const [enviar, setEnviar] = useState<false | true>()
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
+interface FormValues {
+  username: string
+  email: string
+  password: string
+  confirmPassword: string
+}
+
+const schema = Yup.object().shape({
+  username: Yup.string().required('O nome de usuário é obrigatório'),
+  email: Yup.string()
+    .email('Digite um email valido')
+    .required('O campo de email é obrigatório'),
+  password: Yup.string()
+    .min(8, 'A senha deve ter no mínimo 8 caracteres')
+    .required('O campo de senha é obrigatório'),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref('password'), undefined], 'As senhas devem ser iguais')
+    .required('O campo de senha é obrigatório'),
+})
+
+export default function Register(props: RegisterProps) {
   const [showPassword, setShowPassword] = useState(false)
 
-  const inputNameRef: RefObject<HTMLInputElement> = useRef(null)
-  const inputEmailRef: RefObject<HTMLInputElement> = useRef(null)
-  const inputPasswordRef: RefObject<HTMLInputElement> = useRef(null)
-  const inputConfirmPasswordRef: RefObject<HTMLInputElement> = useRef(null)
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormValues>({
+    resolver: yupResolver(schema),
+  })
 
-  const router = useRouter()
-
-  useEffect(() => {
-    setError('')
-    setSuccess('')
-    if (enviar === true) {
-      axios
-        .post('https://servidor-da-tela-de-cadastro.vercel.app/registrar', {
-          name: inputNameRef.current!.value,
-          email: inputEmailRef.current!.value,
-          senha: inputPasswordRef.current!.value,
-          confirmarSenha: inputConfirmPasswordRef.current!.value,
-        })
-        .then((response) => {
-          setSuccess('conta criada com sucesso')
-          router.push('/')
-        })
-        .catch((error) => {
-          setError(error.response.data.error)
-        })
+  const onSubmit: SubmitHandler<FormValues> = (data) => {
+    const formData = {
+      name: data.username,
+      email: data.email,
+      senha: data.password,
+      confirmarSenha: data.confirmPassword,
     }
-    setEnviar(false)
-  }, [enviar, router])
+    async function sendData() {
+      try {
+        const response = await fetch(
+          'https://servidor-da-tela-de-cadastro.vercel.app/registrar',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData),
+          },
+        )
+        if (response.ok) {
+          setTimeout(() => location.reload(), 100)
+        } else {
+          console.log('solicitação deu erro')
+        }
+      } catch (error) {
+        console.error(error)
+      }
+    }
+    sendData()
+  }
+  const onError: SubmitErrorHandler<FormValues> = (errors, e) => {
+    console.log(errors.username?.message)
+  }
 
   const handleShowPassword = () => {
     if (!showPassword) {
@@ -47,89 +79,106 @@ export default function Register() {
       setShowPassword(false)
     }
   }
+
   return (
-    <section
-      className={` ${RobotoSlab.className} background flex h-screen w-screen items-center justify-center`}
-    >
-      <div className="vidro absolute h-screen w-screen"></div>
-      <div className="z-10 h-[600px] w-[60vw] rounded-md bg-white tabletMini:w-[80vw] phone:w-[89vw]">
-        <section className="register flex h-[600px] w-[60vw] items-center justify-center rounded-lg bg-neutral-100  tabletMini:w-[80vw] phone:w-[89vw]">
-          <form action="#" className="animation-aparecer flex flex-col">
-            <div className="flex flex-col items-center justify-center">
-              <h1 className="mb-6 text-2xl font-bold uppercase text-green-400">
-                Crie sua Conta
-              </h1>
-              <p className="text-red-800">{error}</p>
-              <p className="font-bold text-green-300">{success}</p>
-            </div>
-            <label htmlFor="Nome_de_usuario" className="font-medium">
-              Nome de usuário
-            </label>
+    <>
+      <section
+        className="register flex h-[600px] w-[30vw] items-center justify-center bg-neutral-100 tablet:w-[40vw] tabletMini:w-[45vw] phone:hidden"
+        style={{
+          borderRadius: '0px 8px 8px 0px',
+        }}
+      >
+        <form
+          onSubmit={handleSubmit(onSubmit, onError)}
+          className={`${
+            props.animation
+              ? 'animation-desaparecer relative'
+              : 'animation-aparecer'
+          } flex flex-col`}
+        >
+          <div className="flex flex-col items-center justify-center">
+            <h1 className="mb-4 text-2xl font-bold uppercase text-green-400">
+              Crie sua Conta
+            </h1>
+            <p className="text-red-800"></p>
+          </div>
+          <label htmlFor="Nome_de_usuario" className="font-medium">
+            Nome de usuário
+          </label>
+          <input
+            className="input mb-2 rounded-md py-2 pl-3 "
+            type="text"
+            placeholder="Nome de usuário"
+            {...register('username')}
+          />
+          {errors.username && (
+            <p className="-mt-2 text-red-800">{errors.username.message}</p>
+          )}
+          <label htmlFor="Email" className="font-medium">
+            Email
+          </label>
+          <input
+            className="input mb-2 rounded-md py-2 pl-3 "
+            type="text"
+            placeholder="Email"
+            {...register('email')}
+          />
+          {errors.email && (
+            <p className="-mt-2 text-red-800">{errors.email.message}</p>
+          )}
+          <label htmlFor="Senha" className="font-medium">
+            Senha
+          </label>
+          <div className="relative flex flex-col">
             <input
-              ref={inputNameRef}
-              className="input mb-2 rounded-md py-2 pl-3 "
-              type="text"
-              placeholder="Nome de usuário"
+              className="input mb-2 flex-1 rounded-md py-2 pl-3 "
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Senha"
+              {...register('password')}
             />
-            <label htmlFor="Email" className="font-medium">
-              Email
-            </label>
-            <input
-              ref={inputEmailRef}
-              className="input mb-2 rounded-md py-2 pl-3 "
-              type="text"
-              placeholder="Email"
-            />
-            <label htmlFor="Senha" className="font-medium">
-              Senha
-            </label>
-            <div className="relative flex">
-              <input
-                ref={inputPasswordRef}
-                className="input mb-2 flex-1 rounded-md py-2 pl-3 "
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Senha"
-              />
-              <span
-                onClick={handleShowPassword}
-                className="absolute right-2 top-[43%] h-7 w-7 translate-y-[-50%] cursor-pointer"
-              >
-                <div
-                  className={`${
-                    showPassword ? 'image-eye-slash' : 'image-eye'
-                  } h-7 w-7`}
-                ></div>
-              </span>
-            </div>
-            <label htmlFor="Confirmar_senha" className="font-medium">
-              Confirmar senha
-            </label>
-            <input
-              ref={inputConfirmPasswordRef}
-              className="input mb-2 rounded-md py-2 pl-3 "
-              type="password"
-              placeholder="Confirmar senha"
-            />
-            <p className="w-[300px] text-sm">
-              Ao se registrar, você está aceitando nossos{' '}
-              <a href="#" className="text-green-200">
-                termos de uso
-              </a>{' '}
-              e{' '}
-              <a href="#" className="text-green-200">
-                política de privacidade.
-              </a>
-            </p>
-            <button
-              onClick={() => setEnviar(true)}
-              type="submit"
-              className="buttons mt-4 rounded-md bg-green-300 py-2 font-bold text-gray-100 transition-colors hover:bg-green-400"
+            {errors.password && (
+              <p className="-mt-2 text-red-800">{errors.password.message}</p>
+            )}
+            <span
+              onClick={handleShowPassword}
+              className="absolute right-2 top-2 cursor-pointer"
             >
-              Registre-se
-            </button>
-          </form>
-        </section>
-      </div>
-    </section>
+              <div
+                className={`${
+                  showPassword ? 'image-eye-slash' : 'image-eye'
+                } h-7 w-7`}
+              ></div>
+            </span>
+          </div>
+          <label htmlFor="Confirmar_senha" className="font-medium">
+            Confirmar senha
+          </label>
+          <input
+            className="input mb-2 rounded-md py-2 pl-3 "
+            type="password"
+            placeholder="Confirmar senha"
+            {...register('confirmPassword')}
+          />
+          {errors.confirmPassword && (
+            <p className="-mt-2 text-red-800">
+              {errors.confirmPassword.message}
+            </p>
+          )}
+          <p className="w-[300px] text-sm">
+            Ao se registrar, você está aceitando nossos{' '}
+            <a className="cursor-pointer text-green-200">termos de uso</a> e{' '}
+            <a className="cursor-pointer text-green-200">
+              política de privacidade.
+            </a>
+          </p>
+          <button
+            type="submit"
+            className="buttons mt-4 rounded-md bg-green-300 py-2 font-bold text-gray-100 transition-colors hover:bg-green-400"
+          >
+            Registre-se
+          </button>
+        </form>
+      </section>
+    </>
   )
 }

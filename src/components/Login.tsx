@@ -1,39 +1,53 @@
 import Link from 'next/link'
-import { RefObject, useRef, useState } from 'react'
+import { useState } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/router'
+import * as Yup from 'yup'
+import { SubmitErrorHandler, SubmitHandler, useForm } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
 
 interface LoginProps {
-  animation: any
-  options: () => {}
+  animation: boolean | undefined
+  options: () => void
 }
 
+interface FormValues {
+  username: string
+  password: string
+}
+
+const schema = Yup.object().shape({
+  username: Yup.string().required('O campo de nome de usuário é necessário'),
+  password: Yup.string().required('O campo de senha é necessário'),
+})
+
 export default function Login(props: LoginProps) {
-  const [error, setError] = useState('')
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
 
-  const router = useRouter()
-  const inputNameRef: RefObject<HTMLInputElement> = useRef(null)
-  const inputPasswordRef: RefObject<HTMLInputElement> = useRef(null)
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormValues>({
+    resolver: yupResolver(schema),
+  })
 
-  const fetchData = () => {
+  const onSubmit: SubmitHandler<FormValues> = (data) => {
     axios
       .get(
-        // eslint-disable-next-line prettier/prettier
-        `https://servidor-da-tela-de-cadastro.vercel.app/users?name=${inputNameRef.current!.value
-        }&senha=${inputPasswordRef.current!.value}`,
+        `https://servidor-da-tela-de-cadastro.vercel.app/users?name=${data.username}&senha=${data.password}`,
       )
       .then((response) => {
         router.push(`/usuario/${response.data.id}`)
       })
       .catch((error) => {
-        setError(error.response.data.error)
+        console.error(error.response.data.error)
       })
   }
 
-  const checkCredentials = () => {
-    setError('')
-    fetchData()
+  const onError: SubmitErrorHandler<FormValues> = (errors, e) => {
+    console.error(errors)
   }
 
   const handleShowPassword = () => {
@@ -53,40 +67,44 @@ export default function Login(props: LoginProps) {
         }}
       >
         <form
-          onSubmit={(e) => e.preventDefault()}
-          // eslint-disable-next-line prettier/prettier
-          className={`${props.animation ? 'animation-desaparecer' : 'animation-aparecer'
-            // eslint-disable-next-line prettier/prettier
-            }  flex flex-col`}
+          onSubmit={handleSubmit(onSubmit, onError)}
+          className={`${
+            props.animation ? 'animation-desaparecer' : 'animation-aparecer'
+          }  flex flex-col`}
         >
           <div className="flex flex-col items-center justify-center">
             <h1 className="mb-2 text-center text-2xl font-bold uppercase text-green-400">
               Entre para explorar
             </h1>
-            <p className="mb-3 text-red-800">{error}</p>
           </div>
           <label htmlFor="Nome_de_usuario" className="font-medium">
             Nome de usuário
           </label>
           <input
-            ref={inputNameRef}
             className="input mb-2 rounded-md py-2 pl-3 "
             type="text"
             placeholder="Nome de usuário"
+            {...register('username')}
           />
+          {errors.username && (
+            <p className="-mt-2 text-red-800">{errors.username.message}</p>
+          )}
           <label htmlFor="Senha" className="font-medium">
             Senha
           </label>
-          <div className="relative flex">
+          <div className="relative flex flex-col">
             <input
-              ref={inputPasswordRef}
               className="input mb-2 flex-1 rounded-md py-2 pl-3 "
               type={showPassword ? 'text' : 'password'}
               placeholder="Senha"
+              {...register('password')}
             />
+            {errors.password && (
+              <p className="-mt-2 text-red-800">{errors.password.message}</p>
+            )}
             <span
               onClick={handleShowPassword}
-              className="absolute right-2 top-[43%] translate-y-[-50%] cursor-pointer"
+              className="absolute right-2 top-2 cursor-pointer"
             >
               <div
                 className={`${
@@ -108,10 +126,7 @@ export default function Login(props: LoginProps) {
               </Link>
             </div>
           </div>
-          <button
-            onClick={() => checkCredentials()}
-            className="buttons mt-4 rounded-md bg-green-300 py-2 font-bold text-gray-100 transition-colors hover:bg-green-400"
-          >
+          <button className="buttons mt-4 rounded-md bg-green-300 py-2 font-bold text-gray-100 transition-colors hover:bg-green-400">
             Entrar
           </button>
           <div>
@@ -121,13 +136,13 @@ export default function Login(props: LoginProps) {
                 href={'/register'}
                 className="hidden text-green-200 phone:block"
               >
-                increver-se
+                inscrever-se
               </Link>
               <span
                 onClick={() => props.options()}
                 className="cursor-pointer text-green-200 phone:hidden"
               >
-                increver-se
+                inscrever-se
               </span>
             </p>
           </div>

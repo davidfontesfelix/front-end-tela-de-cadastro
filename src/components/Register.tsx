@@ -1,42 +1,76 @@
-import { RefObject, useEffect, useRef, useState } from 'react'
-import axios from 'axios'
+import { useState } from 'react'
+import * as Yup from 'yup'
+import { SubmitErrorHandler, SubmitHandler, useForm } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
 
 interface RegisterProps {
-  animation: any
+  animation: boolean
 }
 
+interface FormValues {
+  username: string
+  email: string
+  password: string
+  confirmPassword: string
+}
+
+const schema = Yup.object().shape({
+  username: Yup.string().required('O nome de usuário é obrigatório'),
+  email: Yup.string()
+    .email('Digite um email valido')
+    .required('O campo de email é obrigatório'),
+  password: Yup.string()
+    .min(8, 'A senha deve ter no mínimo 8 caracteres')
+    .required('O campo de senha é obrigatório'),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref('password'), undefined], 'As senhas devem ser iguais')
+    .required('O campo de senha é obrigatório'),
+})
+
 export default function Register(props: RegisterProps) {
-  const [enviar, setEnviar] = useState<false | true>(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState<string>('')
   const [showPassword, setShowPassword] = useState(false)
 
-  const inputNameRef: RefObject<HTMLInputElement> = useRef(null)
-  const inputEmailRef: RefObject<HTMLInputElement> = useRef(null)
-  const inputPasswordRef: RefObject<HTMLInputElement> = useRef(null)
-  const inputConfirmPasswordRef: RefObject<HTMLInputElement> = useRef(null)
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormValues>({
+    resolver: yupResolver(schema),
+  })
 
-  useEffect(() => {
-    setError('')
-    setSuccess('')
-    if (enviar === true) {
-      axios
-        .post('https://servidor-da-tela-de-cadastro.vercel.app/registrar', {
-          name: inputNameRef.current!.value,
-          email: inputEmailRef.current!.value,
-          senha: inputPasswordRef.current!.value,
-          confirmarSenha: inputConfirmPasswordRef.current!.value,
-        })
-        .then((response) => {
-          setSuccess('conta criada com sucesso')
-          setTimeout(() => location.reload(), 1000)
-        })
-        .catch((error) => {
-          setError(error.response.data.error)
-        })
+  const onSubmit: SubmitHandler<FormValues> = (data) => {
+    const formData = {
+      name: data.username,
+      email: data.email,
+      senha: data.password,
+      confirmarSenha: data.confirmPassword,
     }
-    setEnviar(false)
-  }, [enviar])
+    async function sendData() {
+      try {
+        const response = await fetch(
+          'https://servidor-da-tela-de-cadastro.vercel.app/registrar',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData),
+          },
+        )
+        if (response.ok) {
+          setTimeout(() => location.reload(), 100)
+        } else {
+          console.log('solicitação deu erro')
+        }
+      } catch (error) {
+        console.error(error)
+      }
+    }
+    sendData()
+  }
+  const onError: SubmitErrorHandler<FormValues> = (errors, e) => {
+    console.log(errors.username?.message)
+  }
 
   const handleShowPassword = () => {
     if (!showPassword) {
@@ -55,7 +89,7 @@ export default function Register(props: RegisterProps) {
         }}
       >
         <form
-          onSubmit={(e) => e.preventDefault()}
+          onSubmit={handleSubmit(onSubmit, onError)}
           className={`${
             props.animation
               ? 'animation-desaparecer relative'
@@ -63,43 +97,51 @@ export default function Register(props: RegisterProps) {
           } flex flex-col`}
         >
           <div className="flex flex-col items-center justify-center">
-            <h1 className="mb-6 text-2xl font-bold uppercase text-green-400">
+            <h1 className="mb-4 text-2xl font-bold uppercase text-green-400">
               Crie sua Conta
             </h1>
-            <p className="text-red-800">{error}</p>
-            <p className="font-bold text-green-300">{success}</p>
+            <p className="text-red-800"></p>
           </div>
           <label htmlFor="Nome_de_usuario" className="font-medium">
             Nome de usuário
           </label>
           <input
-            ref={inputNameRef}
             className="input mb-2 rounded-md py-2 pl-3 "
             type="text"
             placeholder="Nome de usuário"
+            {...register('username')}
           />
+          {errors.username && (
+            <p className="-mt-2 text-red-800">{errors.username.message}</p>
+          )}
           <label htmlFor="Email" className="font-medium">
             Email
           </label>
           <input
-            ref={inputEmailRef}
             className="input mb-2 rounded-md py-2 pl-3 "
             type="text"
             placeholder="Email"
+            {...register('email')}
           />
+          {errors.email && (
+            <p className="-mt-2 text-red-800">{errors.email.message}</p>
+          )}
           <label htmlFor="Senha" className="font-medium">
             Senha
           </label>
-          <div className="relative flex">
+          <div className="relative flex flex-col">
             <input
-              ref={inputPasswordRef}
               className="input mb-2 flex-1 rounded-md py-2 pl-3 "
               type={showPassword ? 'text' : 'password'}
               placeholder="Senha"
+              {...register('password')}
             />
+            {errors.password && (
+              <p className="-mt-2 text-red-800">{errors.password.message}</p>
+            )}
             <span
               onClick={handleShowPassword}
-              className="absolute right-2 top-[43%] translate-y-[-50%] cursor-pointer"
+              className="absolute right-2 top-2 cursor-pointer"
             >
               <div
                 className={`${
@@ -112,11 +154,16 @@ export default function Register(props: RegisterProps) {
             Confirmar senha
           </label>
           <input
-            ref={inputConfirmPasswordRef}
             className="input mb-2 rounded-md py-2 pl-3 "
             type="password"
             placeholder="Confirmar senha"
+            {...register('confirmPassword')}
           />
+          {errors.confirmPassword && (
+            <p className="-mt-2 text-red-800">
+              {errors.confirmPassword.message}
+            </p>
+          )}
           <p className="w-[300px] text-sm">
             Ao se registrar, você está aceitando nossos{' '}
             <a className="cursor-pointer text-green-200">termos de uso</a> e{' '}
@@ -125,7 +172,6 @@ export default function Register(props: RegisterProps) {
             </a>
           </p>
           <button
-            onClick={() => setEnviar(true)}
             type="submit"
             className="buttons mt-4 rounded-md bg-green-300 py-2 font-bold text-gray-100 transition-colors hover:bg-green-400"
           >
